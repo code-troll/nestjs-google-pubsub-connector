@@ -27,6 +27,10 @@ export default {
   ],
   testEnvironment: "node",
   transform: {
-      "^.+\\.(t|j)s$": "ts-jest"
+      "^.+\\.(t|j)s$": ["ts-jest", {
+          diagnostics: {
+              ignoreCodes: [151002]
+          }
+      }]
   }
 };

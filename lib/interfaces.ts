@@ -146,7 +146,7 @@ export interface GooglePubSubOptions {
     pubSubClientConfig?: ClientConfig;
 }
 
-export type PublishData = Buffer | Record<string, any>;
+export type PublishData = Buffer | Record<string, unknown>;
 
 export interface ClientGooglePubSubOutgoingRequestData {
     message: PublishData;

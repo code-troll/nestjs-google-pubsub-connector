@@ -8,9 +8,12 @@ export const getMessageBody = (
 ): Record<string, unknown> | null => {
     const message: Message = ctx.switchToRpc().getContext<GooglePubSubContext>().getMessage();
     try {
-        const body = JSON.parse(message.data.toString());
+        const body: Record<string, unknown> = JSON.parse(message.data.toString()) as Record<
+            string,
+            unknown
+        >;
         if (key != null) {
-            return body[key];
+            return body[key] as Record<string, unknown>;
         }
         return body;
     } catch {
