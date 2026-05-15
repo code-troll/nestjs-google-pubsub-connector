@@ -4,7 +4,7 @@ import { CustomTransportStrategy, MessageHandler, ReadPacket, Server } from '@ne
 import { firstValueFrom, from, merge, Observable, of, Subscription } from 'rxjs';
 import { catchError, map, mapTo, mergeMap } from 'rxjs/operators';
 import { ClientGooglePubSub } from '../client';
-import { GooglePubSubContext } from '../ctx-host/google-pubsub.context';
+import { GooglePubSubContext } from '../ctx-host';
 import { GooglePubSubMessageDeserializer } from '../deserializers';
 import { InvalidPatternMetadataException } from '../errors';
 import { TransportError } from '../errors/transport-error.exception';
@@ -133,15 +133,18 @@ export class GooglePubSubTransport extends Server implements CustomTransportStra
             .toPromise();
 
         // Group all of our event listeners into an array
-        const listeners = Array.from(this.subscriptions, this.subscribeMessageEvent);
+        const listeners = Array.from(this.subscriptions, (entry) =>
+            this.subscribeMessageEvent(entry),
+        );
 
         this.listenerSubscription = merge(...listeners)
-            .pipe(map(this.deserializeAndAddContext), mergeMap(this.handleMessage))
+            .pipe(
+                map((entry) => this.deserializeAndAddContext(entry)),
+                mergeMap((data) => this.handleMessage(data)),
+            )
             .subscribe();
-        this.iterators = Array.from(
-            this.synchronousSubscriptions,
-            this.getSubscriptionIterator,
-            this,
+        this.iterators = Array.from(this.synchronousSubscriptions, (entry) =>
+            this.getSubscriptionIterator(entry),
         );
 
         //for one at a time messages, pull events from their iterators and handle them
@@ -184,7 +187,7 @@ export class GooglePubSubTransport extends Server implements CustomTransportStra
      */
     private parsePattern = (pattern: string): GooglePubSubPatternMetadata => {
         try {
-            return JSON.parse(pattern);
+            return JSON.parse(pattern) as GooglePubSubPatternMetadata;
         } catch {
             throw new InvalidPatternMetadataException(pattern);
         }
@@ -392,5 +395,19 @@ export class GooglePubSubTransport extends Server implements CustomTransportStra
 
     public getHandlerByPattern(pattern: string): MessageHandler | null {
         return this.messageHandlers.get(pattern) ?? null;
+    }
+
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
+    public on<EventKey extends string, EventCallback extends Function = Function>(
+        event: EventKey,
+        callback: EventCallback,
+    ): void {
+        this.googlePubSubClient.listenForMessages(event).subscribe((message) => {
+            (callback as unknown as (...args: unknown[]) => void)(message);
+        });
+    }
+
+    public unwrap<T = ClientGooglePubSub>(): T {
+        return this.googlePubSubClient as T;
     }
 }

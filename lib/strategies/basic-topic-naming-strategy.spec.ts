@@ -7,8 +7,8 @@ describe(BasicTopicNamingStrategy.name, () => {
 
         // prettier-ignore
         fc.assert(fc.property(
-            fc.fullUnicodeString(),
-            s => {
+            fc.string(),
+            (s: string) => {
                 expect(strat.generateTopicName(s)).toBe(s)
             }
         ))

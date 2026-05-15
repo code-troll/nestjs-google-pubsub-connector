@@ -4,7 +4,7 @@
     /* Basic Options */
     "incremental": false,
     "target": "ES2022",
-    "module": "commonjs",
+    "module": "node16",
     "allowJs": false,
     "declaration": true,
     "declarationMap": true,
@@ -25,7 +25,7 @@
     "noPropertyAccessFromIndexSignature": true,
 
     /* Module Resolution Options */
-    "moduleResolution": "node",
+    "moduleResolution": "node16",
     "esModuleInterop": true,
 
     /* Experimental Options */
@@ -34,7 +34,8 @@
 
     /* Advanced Options */
     "skipLibCheck": true,
-    "forceConsistentCasingInFileNames": true
+    "forceConsistentCasingInFileNames": true,
+    "types": ["jest"]
   },
   "exclude": [
     "dist/**/*.d.ts"

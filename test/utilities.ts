@@ -3,13 +3,13 @@ import { ExecutionContext } from '@nestjs/common';
 import { GooglePubSubContext } from '../lib';
 
 export const createMessage = (options?: Partial<Message>): Message =>
-    (Object.assign(
+    Object.assign(
         {
             ack: jest.fn(),
             nack: jest.fn(),
         },
         options,
-    ) as unknown) as Message;
+    ) as Message;
 
 export const createExecutionContext = (ctx: GooglePubSubContext): ExecutionContext => {
     return {

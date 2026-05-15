@@ -32,4 +32,4 @@ async function bootstrap() {
         console.log('example app started!');
     });
 }
-bootstrap();
+void bootstrap();

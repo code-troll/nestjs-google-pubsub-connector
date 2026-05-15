@@ -1,7 +1,7 @@
 import type { PubSub, Subscription as SubscriptionType } from '@google-cloud/pubsub';
 
 const { Topic, Subscription } = jest.requireActual('@google-cloud/pubsub');
-const moduleMock: { PubSub: typeof PubSub } = jest.genMockFromModule('@google-cloud/pubsub');
+const moduleMock: { PubSub: typeof PubSub } = jest.createMockFromModule('@google-cloud/pubsub');
 const PubSubMock = moduleMock.PubSub as jest.MockedClass<typeof PubSub>;
 
 PubSubMock.prototype.subscription.mockImplementation(

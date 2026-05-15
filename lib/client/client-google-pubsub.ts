@@ -209,6 +209,7 @@ export class ClientGooglePubSub extends ClientProxy {
      * @param packet
      * @returns
      */
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     protected dispatchEvent(packet: ClientGooglePubSubOutgoingRequestSerializedData): Promise<any> {
         const options: MessageOptions = {
             attributes: packet.data.attributes,
@@ -220,7 +221,7 @@ export class ClientGooglePubSub extends ClientProxy {
             options.json = packet.data.message;
         }
 
-        const topic = this.googlePubSubClient.topic(packet.pattern);
+        const topic = this.googlePubSubClient.topic(packet.pattern as string);
         return topic.publishMessage(options);
     }
 
@@ -250,9 +251,16 @@ export class ClientGooglePubSub extends ClientProxy {
     }
 
     /**
+     * Returns the underlying PubSub client instance
+     */
+    public unwrap<T = PubSub>(): T {
+        return this.googlePubSubClient as T;
+    }
+
+    /**
      * This refers to an internal publish method to NestJS, please use `publishToTopic`.
      */
-    protected publish(): any {
+    protected publish(): never {
         throw new Error('Method intentionally not implemented.');
     }
 }
