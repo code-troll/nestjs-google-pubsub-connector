@@ -1,9 +1,11 @@
 <h1 align="center">NestJS Google Pubsub Connector</h1>
 <p align="center">
-  <a href="https://www.npmjs.com/package/@flosportsinc/nestjs-google-pubsub-connector">
-    <img alt="npm latest version" src="https://img.shields.io/npm/v/@flosportsinc/nestjs-google-pubsub-connector/latest.svg" />
+  <a href="https://www.npmjs.com/package/@francoca87/nestjs-google-pubsub-connector">
+    <img alt="npm latest version" src="https://img.shields.io/npm/v/@francoca87/nestjs-google-pubsub-connector/latest.svg" />
   </a>
 </p>
+
+> Forked from [flocasts/nestjs-google-pubsub-connector](https://github.com/flocasts/nestjs-google-pubsub-connector)
 
 This package includes two pieces, a NestJS microservice strategy as well as a client proxy. Together this enables
 easy integration with Google PubSub in a NestJS-y way.
@@ -82,7 +84,7 @@ argument, which expects a class conforming to the `SubscriptionNamingStrategy`
 interface. A basic strategy is included by default:
 
 ```typescript
-import { SubscriptionNamingStrategy } from '@flosports/nestjs-google-pubsub-microservice';
+import { SubscriptionNamingStrategy } from '@francoca87/nestjs-google-pubsub-microservice';
 import { NamingDependencyTag, SubscriptionNameDependencies } from './interfaces';
 
 export class BasicSubscriptionNamingStrategy implements SubscriptionNamingStrategy {
@@ -174,8 +176,8 @@ should choose to create. </br>
 // src/main.ts
 import { NestFactory } from '@nestjs/core';
 import {
-    GooglePubSubTransport
-} from '@flosports/nestjs-google-pubsub-microservice';
+    GooglePubSubTransport,
+} from '@francoca87/nestjs-google-pubsub-microservice';
 import { TestModule } from './test.module';
 
 async function bootstrap() {
@@ -191,11 +193,12 @@ async function bootstrap() {
         console.log('app started!');
     });
 }
+
 bootstrap();
 
 // src/test.module.ts
-import { Module } from "@nestjs/common";
-import { TestController } from "./test.controller";
+import { Module } from '@nestjs/common';
+import { TestController } from './test.controller';
 
 @Module({
     controllers: [TestController],
@@ -207,13 +210,16 @@ export class TestModule {
 import { Controller } from '@nestjs/common';
 import {
     GooglePubSubMessageBody,
-    GooglePubSubMessageHandler
-} from '@flosports/nestjs-google-pubsub-microservice';
+    GooglePubSubMessageHandler,
+} from '@francoca87/nestjs-google-pubsub-microservice';
+
 @Controller()
 export class TestController {
     constructor(
-        private readonly diService: DiService;
-    ) { }
+        private readonly diService: DiService,
+    ) {
+    }
+
     @GooglePubSubMessageHandler({
         subscriptionName: 'my-existing-subscription',
     })
@@ -226,9 +232,9 @@ export class TestController {
         createOptions: {
             enableMessageOrdering: true,
         },
-        topicName: 'my-existing-topic'
+        topicName: 'my-existing-topic',
     })
-    public handler2(@GooglePubSubMessageBody('bar') bar:  boolean ): void {
+    public handler2(@GooglePubSubMessageBody('bar') bar: boolean): void {
         return this.diService.handleBar(data);
     }
 }
@@ -243,7 +249,7 @@ The library allows you to choose whether to handle your messages in parallel (th
 ```typescript
     @GooglePubSubMessageHandler({
         subscriptionName: 'my-subscription-that-or-may-not-exist',
-        topicName: 'my-existing-topic'
+        topicName: 'my-existing-topic',
         oneAtATime: true //true for serial handling, false or blank for default
     })
     public handler2(@GooglePubSubMessageBody('bar') bar:  boolean ): void {
@@ -267,7 +273,7 @@ You can find a number of working examples in the [examples directory](examples/c
 ### Usage
 
 ```typescript
-import { ClientGooglePubSub } from '@flosports/nestjs-google-pubsub-microservice';
+import { ClientGooglePubSub } from '@francoca87/nestjs-google-pubsub-microservice';
 
 const msg = 'beam me up scotty';
 
@@ -304,10 +310,10 @@ To run the server, simply invoke the provided `npm` script:
 npm run example:server
 ```
 
-Assuming all prerequisites are met you should see something like the following:
+Assuming all prerequisites are met, you should see something like the following:
 
 ```sh
-> @flosportsinc/nestjs-google-pubsub-connector@0.0.0-development example:server /Users/haroldwaters/repos/nestjs-google-pubsub-transport
+> @francoca87/nestjs-google-pubsub-connector@0.0.0-development example:server /Users/francocarreras/repos/nestjs-google-pubsub-transport
 > node --inspect -r ts-node/register examples/server/main.ts
 
 Debugger listening on ws://127.0.0.1:9229/d23772bb-0e6d-40f8-b47d-d0fc94c7c8c2
@@ -316,6 +322,6 @@ For help, see: https://nodejs.org/en/docs/inspector
 [Nest] 90792   - 04/17/2021, 7:04:02 PM   [InstanceLoader] ExampleService dependencies initialized +28ms
 [Nest] 90792   - 04/17/2021, 7:04:02 PM   [InstanceLoader] ExampleModule dependencies initialized +0ms
 [Nest] 90792   - 04/17/2021, 7:04:02 PM   [NestMicroservice] Nest microservice successfully started +5ms
-[Nest] 90792   - 04/17/2021, 7:04:02 PM   [GooglePubSubTransport] Mapped {projects/flosports-174016/subscriptions/lee-christmas-notifications} handler
+[Nest] 90792   - 04/17/2021, 7:04:02 PM   [GooglePubSubTransport] Mapped {projects/francocarreras-174016/subscriptions/lee-christmas-notifications} handler
 example app started!
 ```
