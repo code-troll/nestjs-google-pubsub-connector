@@ -1,6 +1,6 @@
 {
     "name": "@francoca87/nestjs-google-pubsub-connector",
-    "version": "0.1.0-development",
+    "version": "1.0.0",
     "description": "A NestJS Connector for Google PubSub",
     "main": "dist/index.js",
     "repository": {
