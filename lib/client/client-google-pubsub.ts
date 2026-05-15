@@ -222,6 +222,7 @@ export class ClientGooglePubSub extends ClientProxy {
         }
 
         const topic = this.googlePubSubClient.topic(packet.pattern as string);
+
         return topic.publishMessage(options);
     }
 
