@@ -3,6 +3,7 @@
     "version": "1.0.1",
     "description": "A NestJS Connector for Google PubSub",
     "main": "dist/index.js",
+    "types": "dist/index.d.ts",
     "repository": {
         "url": "git+https://github.com/code-troll/nestjs-google-pubsub-connector.git",
         "type": "git"
