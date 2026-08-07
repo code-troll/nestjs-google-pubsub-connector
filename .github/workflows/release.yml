@@ -1,0 +1,99 @@
+name: Release
+
+# Releases are driven by the version in package.json: when a merge to main
+# bumps "version" forward, this workflow validates the bump, runs the checks,
+# creates a GitHub release for v<version>, and publishes to npm.
+on:
+    push:
+        branches: [main]
+
+permissions:
+    contents: write # create the GitHub release + tag
+    id-token: write # OIDC trusted publishing + npm provenance
+
+jobs:
+    release:
+        name: Release on version bump
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v4
+              with:
+                  fetch-depth: 0 # need the parent commit to diff the version
+
+            - name: Detect version change
+              id: v
+              run: |
+                  NEW="$(node -p "require('./package.json').version")"
+                  OLD="$(git show HEAD~1:package.json 2>/dev/null \
+                         | node -p "JSON.parse(require('fs').readFileSync(0,'utf8')).version" 2>/dev/null || echo '0.0.0')"
+                  echo "new=$NEW" >> "$GITHUB_OUTPUT"
+                  echo "old=$OLD" >> "$GITHUB_OUTPUT"
+                  if [ "$NEW" = "$OLD" ]; then
+                      echo "changed=false" >> "$GITHUB_OUTPUT"
+                      echo "No version change ($NEW) — skipping release."
+                  else
+                      echo "changed=true" >> "$GITHUB_OUTPUT"
+                  fi
+
+            - name: Validate version moved forward
+              if: steps.v.outputs.changed == 'true'
+              run: |
+                  if ! npx --yes semver "${{ steps.v.outputs.new }}" -r ">${{ steps.v.outputs.old }}" >/dev/null; then
+                      echo "::error::package.json version ${{ steps.v.outputs.new }} is not greater than previous ${{ steps.v.outputs.old }}"
+                      exit 1
+                  fi
+                  echo "Version bumped ${{ steps.v.outputs.old }} -> ${{ steps.v.outputs.new }}"
+
+            - name: Guard against re-releasing an existing tag
+              if: steps.v.outputs.changed == 'true'
+              env:
+                  GH_TOKEN: ${{ github.token }}
+              run: |
+                  if gh release view "v${{ steps.v.outputs.new }}" >/dev/null 2>&1; then
+                      echo "::error::release v${{ steps.v.outputs.new }} already exists"
+                      exit 1
+                  fi
+
+            # Everything below only runs when the version actually moved forward.
+            - uses: actions/setup-node@v4
+              if: steps.v.outputs.changed == 'true'
+              with:
+                  node-version: 22
+                  registry-url: 'https://registry.npmjs.org'
+
+            - name: Upgrade npm for OIDC trusted publishing
+              if: steps.v.outputs.changed == 'true'
+              run: npm install -g npm@latest # trusted publishing needs npm >= 11.5.1
+
+            - name: Install dependencies
+              if: steps.v.outputs.changed == 'true'
+              run: npm ci
+
+            - name: Lint
+              if: steps.v.outputs.changed == 'true'
+              run: npm run lint
+
+            - name: Unit tests
+              if: steps.v.outputs.changed == 'true'
+              run: npm run test:ci
+
+            - name: E2E tests
+              if: steps.v.outputs.changed == 'true'
+              run: npm run test:e2e:ci
+
+            - name: Build package
+              if: steps.v.outputs.changed == 'true'
+              run: npm run build:package
+
+            - name: Create GitHub release
+              if: steps.v.outputs.changed == 'true'
+              env:
+                  GH_TOKEN: ${{ github.token }}
+              run: |
+                  gh release create "v${{ steps.v.outputs.new }}" \
+                      --title "v${{ steps.v.outputs.new }}" \
+                      --generate-notes
+
+            - name: Publish to npm
+              if: steps.v.outputs.changed == 'true'
+              run: npm publish --provenance --access public # OIDC trusted publishing — no token needed
