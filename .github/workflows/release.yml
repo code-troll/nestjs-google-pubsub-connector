@@ -98,6 +98,11 @@ jobs:
               env:
                   GH_TOKEN: ${{ github.token }}
               run: |
+                  # --target pins the tag to the commit this run built and published.
+                  # Without it gh tags the default branch's HEAD, which may have moved
+                  # on since the run started, leaving v<version> on a commit that is not
+                  # what shipped.
                   gh release create "v${{ steps.v.outputs.new }}" \
+                      --target "${{ github.sha }}" \
                       --title "v${{ steps.v.outputs.new }}" \
                       --generate-notes
