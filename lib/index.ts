@@ -5,3 +5,4 @@ export * from './deserializers';
 export * from './errors';
 export * from './interfaces';
 export * from './server';
+export * from './strategies';
