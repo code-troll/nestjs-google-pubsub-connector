@@ -85,6 +85,14 @@ jobs:
               if: steps.v.outputs.changed == 'true'
               run: npm run build:package
 
+            # Publish first: it is the only irreversible step and the one that can
+            # fail on credentials. Creating the GitHub release first would leave an
+            # orphaned tag pointing at a version that never reached npm, and the
+            # "already exists" guard above would then block the re-run.
+            - name: Publish to npm
+              if: steps.v.outputs.changed == 'true'
+              run: npm publish --provenance --access public # OIDC trusted publishing — no token needed
+
             - name: Create GitHub release
               if: steps.v.outputs.changed == 'true'
               env:
@@ -93,7 +101,3 @@ jobs:
                   gh release create "v${{ steps.v.outputs.new }}" \
                       --title "v${{ steps.v.outputs.new }}" \
                       --generate-notes
-
-            - name: Publish to npm
-              if: steps.v.outputs.changed == 'true'
-              run: npm publish --provenance --access public # OIDC trusted publishing — no token needed
